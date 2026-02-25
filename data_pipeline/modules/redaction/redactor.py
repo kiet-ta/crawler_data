@@ -9,7 +9,7 @@ the original document structure is preserved while making PII unreadable. This
 is crucial for ML training where document layout matters.
 """
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from pathlib import Path
 import numpy as np
 import cv2
