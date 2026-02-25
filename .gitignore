@@ -35,13 +35,6 @@ dmypy.json
 .pyre/
 
 # =============================================================================
-# Pipeline — Generated Dataset & Outputs
-# =============================================================================
-# All raw + redacted documents are generated artifacts, not source code.
-# They can be hundreds of MBs and must not be committed.
-dataset/
-
-# =============================================================================
 # Pipeline — Runtime Logs
 # =============================================================================
 data_pipeline/pipeline.log
