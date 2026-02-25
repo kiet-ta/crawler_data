@@ -40,6 +40,10 @@ class PipelineConfig:
     CRAWLER_HEADLESS = True
     CRAWLER_MIN_DELAY = 2.0  # seconds - mimics human behavior
     CRAWLER_MAX_DELAY = 5.0  # seconds
+
+    # Browser channel: 'msedge' uses the system-installed Microsoft Edge (no download needed).
+    # Other valid values: 'chrome', 'chrome-beta', 'msedge-beta', or None (uses bundled Chromium).
+    CRAWLER_BROWSER_CHANNEL: str = "msedge"
     
     # Search queries for template discovery
     TEMPLATE_SEARCH_QUERIES = [

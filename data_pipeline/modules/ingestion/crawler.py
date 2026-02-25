@@ -76,8 +76,19 @@ class TemplateCrawler:
         """
         logger.info("Initializing Playwright browser")
         playwright = await async_playwright().start()
-        
+
+        # channel="msedge" tells Playwright to use the system-installed Microsoft Edge
+        # instead of its own bundled Chromium — no extra download required.
+        # Playwright still drives it through the same Chromium DevTools Protocol,
+        # so all automation APIs work identically.
+        browser_channel: Optional[str] = PipelineConfig.CRAWLER_BROWSER_CHANNEL or None
+        log_with_context(
+            logger, 'info', 'Launching browser',
+            channel=browser_channel or "bundled-chromium"
+        )
+
         self.browser = await playwright.chromium.launch(
+            channel=browser_channel,
             headless=self.headless,
             args=[
                 '--disable-blink-features=AutomationControlled',  # Hide automation flags

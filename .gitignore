@@ -1,0 +1,110 @@
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env/
+ENV/
+
+# Distribution / packaging
+*.whl
+*.tar.gz
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+
+# =============================================================================
+# Pipeline — Generated Dataset & Outputs
+# =============================================================================
+# All raw + redacted documents are generated artifacts, not source code.
+# They can be hundreds of MBs and must not be committed.
+dataset/
+
+# =============================================================================
+# Pipeline — Runtime Logs
+# =============================================================================
+data_pipeline/pipeline.log
+*.log
+
+# =============================================================================
+# EasyOCR — Downloaded Model Weights
+# =============================================================================
+# EasyOCR downloads ~50-100 MB language models on first run.
+# Store them outside the repo or in a separate artifact store.
+.EasyOCR/
+~/.EasyOCR/
+
+# =============================================================================
+# Playwright — Browser Binaries
+# =============================================================================
+# Only relevant if someone runs `playwright install` locally.
+# With channel="msedge" the system Edge is used, so this folder
+# should not appear — but guard it anyway.
+.local-browsers/
+playwright-browsers/
+
+# =============================================================================
+# OpenCV / NumPy — Temporary / Cache
+# =============================================================================
+*.npz
+*.npy
+
+# =============================================================================
+# Jupyter (if notebooks are added later)
+# =============================================================================
+.ipynb_checkpoints/
+*.ipynb
+
+# =============================================================================
+# Environment & Secrets
+# =============================================================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# =============================================================================
+# IDE & Editor
+# =============================================================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# =============================================================================
+# Testing & Coverage
+# =============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.coveragerc

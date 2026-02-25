@@ -3,7 +3,9 @@
 # Core Dependencies
 # -----------------
 
-# Async web automation for template discovery
+# Async web automation for template discovery.
+# Uses the system-installed Microsoft Edge (channel="msedge") — no browser download needed.
+# Only install the Python package; do NOT run `playwright install chromium`.
 playwright>=1.40.0
 
 # Computer Vision & Image Processing
