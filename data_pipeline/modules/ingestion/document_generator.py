@@ -382,13 +382,36 @@ class ImageDocumentGenerator:
         draw = ImageDraw.Draw(image)
         
         # Try to use a default font (fallback to default if not available)
-        try:
-            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 60)
-            font_text = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 40)
-        except IOError:
-            font_title = ImageFont.load_default()
-            font_text = ImageFont.load_default()
-            logger.warning("Could not load TrueType fonts, using default")
+        # Font size 80/55 at 2480x3508 (A4@300DPI) ensures EasyOCR can read the text
+        # reliably even after scan simulation effects are applied.
+        FONT_PATHS_BOLD = [
+            "/usr/share/fonts/TTF/Roboto-Bold.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+            "/usr/share/fonts/Adwaita/AdwaitaSans-Regular.ttf",
+        ]
+        FONT_PATHS_REGULAR = [
+            "/usr/share/fonts/TTF/Roboto-Regular.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/Adwaita/AdwaitaSans-Regular.ttf",
+        ]
+        font_title = None
+        font_text = None
+        for path in FONT_PATHS_BOLD:
+            try:
+                font_title = ImageFont.truetype(path, 80)
+                break
+            except IOError:
+                continue
+        for path in FONT_PATHS_REGULAR:
+            try:
+                font_text = ImageFont.truetype(path, 55)
+                break
+            except IOError:
+                continue
+        if font_title is None or font_text is None:
+            font_title = ImageFont.load_default(size=80)
+            font_text = ImageFont.load_default(size=55)
+            logger.warning("Could not load any TrueType font, using PIL default")
         
         pii_locations = []
         

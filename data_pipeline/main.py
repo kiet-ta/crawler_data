@@ -130,7 +130,13 @@ class DataPipeline:
                 error=str(e)
             )
             raise
-            
+
+        # Register documents in metadata NOW so Phase 2 (add_pii_matches_to_document)
+        # can look them up by filename. If we waited until _finalize_metadata(), every
+        # PII match would be silently dropped with a "Document not found" warning.
+        for doc_meta in documents_metadata:
+            self.metadata_manager.add_document(doc_meta)
+
         return documents_metadata
         
     def _run_processing(self) -> List[Dict[str, Any]]:
@@ -282,11 +288,19 @@ class DataPipeline:
         logger.info("=" * 60)
         logger.info("PHASE 3: METADATA FINALIZATION")
         logger.info("=" * 60)
-        
-        # Add all document metadata
+
+        # Documents were already registered in _run_ingestion() so that Phase 2
+        # could attach redacted_boxes to them via add_pii_matches_to_document.
+        # Here we only need to attach PII for any file whose add_pii_matches call
+        # may have been skipped (e.g. files that were in dataset/ but not generated
+        # this run, or images where OCR produced no results).
+        registered_filenames = {
+            doc.get("filename") for doc in self.metadata_manager.metadata["documents"]
+        }
         for doc_meta in documents_metadata:
-            self.metadata_manager.add_document(doc_meta)
-            
+            if doc_meta.get("filename") not in registered_filenames:
+                self.metadata_manager.add_document(doc_meta)
+
         # Calculate processing statistics
         successful = sum(1 for r in processing_results if r.get('success', False))
         failed = len(processing_results) - successful
