@@ -1,0 +1,42 @@
+# PII Redaction Data Pipeline - Requirements
+
+# Core Dependencies
+# -----------------
+
+# Async web automation for template discovery
+playwright>=1.40.0
+
+# Computer Vision & Image Processing
+opencv-python>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# PDF Processing
+reportlab>=4.0.0  # PDF generation
+pdf2image>=1.16.3  # PDF to image conversion
+# Note: pdf2image requires poppler-utils to be installed on the system
+# On Ubuntu/Debian: sudo apt-get install poppler-utils
+# On macOS: brew install poppler
+# On Windows: Download from https://github.com/oschwartz10612/poppler-windows/releases/
+
+# OCR Engine
+easyocr>=1.7.0
+# Note: First run will download language models (~50-100MB per language)
+
+# Alternative OCR (commented out - use if EasyOCR doesn't work)
+# pytesseract>=0.3.10
+# Note: pytesseract requires tesseract-ocr to be installed on the system
+# On Ubuntu/Debian: sudo apt-get install tesseract-ocr tesseract-ocr-vie
+# On macOS: brew install tesseract tesseract-lang
+# On Windows: Download from https://github.com/UB-Mannheim/tesseract/wiki
+
+# Utilities
+# ---------
+python-dateutil>=2.8.2
+
+# Development & Testing (Optional)
+# ---------------------------------
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+# black>=23.7.0
+# flake8>=6.1.0
