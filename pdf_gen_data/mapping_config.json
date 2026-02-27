@@ -1,0 +1,37 @@
+{
+  "templates": [
+    {
+      "docuseal_template_id": 1,
+      "name": "Real Estate Sales Contract",
+      "description": "Vietnamese real estate sales contract template",
+      "fields": {
+        "Full Name": "person.fullName",
+        "Date of Birth": "date.past",
+        "Phone Number": "phone.number",
+        "Email": "internet.email",
+        "Address": "location.streetAddress",
+        "ID Number": "string.numeric|{\"length\":12}",
+        "Contract Date": "date.recent",
+        "Property Address": "location.streetAddress",
+        "Property Price": "finance.amount|{\"min\":100000,\"max\":999999,\"dec\":0}",
+        "Buyer Signature": "person.fullName",
+        "Seller Signature": "person.fullName"
+      }
+    },
+    {
+      "docuseal_template_id": 2,
+      "name": "Lease Agreement",
+      "description": "Standard lease agreement template",
+      "fields": {
+        "Tenant Name": "person.fullName",
+        "Landlord Name": "person.fullName",
+        "Lease Start Date": "date.future",
+        "Lease End Date": "date.future",
+        "Monthly Rent": "finance.amount|{\"min\":500,\"max\":5000,\"dec\":0}",
+        "Property Address": "location.streetAddress",
+        "Tenant Phone": "phone.number",
+        "Tenant Email": "internet.email"
+      }
+    }
+  ]
+}
