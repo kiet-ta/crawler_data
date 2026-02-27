@@ -98,6 +98,66 @@ export class ConfigService {
 
     return result.data;
   }
+
+  /**
+   * Validate, back up the current file, and persist `data` to disk.
+   *
+   * Why validate before write: we must never persist data that fails
+   * MappingConfigSchema — a corrupt config file would break every
+   * subsequent `npm run dev` startup.
+   *
+   * Why create a backup: gives the developer a one-step recovery path if
+   * the merged output looks unexpected. A `.backup.json` sibling is
+   * sufficient; deeper rollback is available via git history.
+   *
+   * @param data — The merged config to persist.
+   * @throws {ConfigValidationError} if `data` fails schema validation.
+   * @throws {ConfigSaveError}       if the file cannot be written.
+   */
+  save(data: MappingConfig): void {
+    // 1. Final schema guard — reject corrupt data before touching disk.
+    const validated = this.validate(data);
+
+    // 2. Backup the existing file (non-fatal if it fails).
+    this.backupCurrentFile();
+
+    // 3. Atomic write: pretty-print with 2-space indentation.
+    try {
+      fs.writeFileSync(
+        this.configPath,
+        JSON.stringify(validated, null, 2),
+        "utf-8"
+      );
+    } catch (error) {
+      throw new ConfigSaveError(
+        this.configPath,
+        (error as Error).message
+      );
+    }
+  }
+
+  /**
+   * Copy the current config to a `.backup.json` sibling file.
+   *
+   * Why best-effort (no throw): a backup failure is annoying but must
+   * not block the save — the user would rather have an updated config
+   * without a backup than a stale config because the backup path is
+   * temporarily unwritable (e.g. read-only filesystem).
+   */
+  private backupCurrentFile(): void {
+    if (!fs.existsSync(this.configPath)) return;
+
+    const backupPath = this.configPath.replace(/\.json$/, ".backup.json");
+    try {
+      fs.copyFileSync(this.configPath, backupPath);
+    } catch (error) {
+      console.warn(
+        `[ConfigService] Could not create backup at "${backupPath}": ${
+          (error as Error).message
+        }`
+      );
+    }
+  }
 }
 
 // ── Custom error classes ────────────────────────────────────────────
@@ -135,5 +195,12 @@ export class ConfigValidationError extends Error {
         "Refer to mapping_config.json schema in src/types.ts."
     );
     this.name = "ConfigValidationError";
+  }
+}
+
+export class ConfigSaveError extends Error {
+  constructor(filePath: string, detail: string) {
+    super(`Failed to save configuration to "${filePath}": ${detail}`);
+    this.name = "ConfigSaveError";
   }
 }

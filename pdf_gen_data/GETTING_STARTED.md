@@ -46,25 +46,11 @@ The tool submits data to an existing template. You need at least one before runn
 
 1. In DocuSeal, click **New Template**.
 2. Upload a PDF or build a form from scratch.
-3. Add fields whose names **exactly match** the keys in `mapping_config.json` (e.g. `Full Name`, `Email`).
-4. Save the template and note its numeric ID from the URL (e.g. `/templates/1`).
+3. Add fields and give them meaningful names (e.g. `Full Name`, `Email`, `Phone Number`).
+4. Save the template.
 
-Update `mapping_config.json` with the correct `docuseal_template_id` value:
-
-```json
-{
-  "templates": [
-    {
-      "docuseal_template_id": 1,
-      "name": "Real Estate Sales Contract",
-      "fields": {
-        "Full Name": "person.fullName",
-        "Email": "internet.email"
-      }
-    }
-  ]
-}
-```
+> **Tip — skip manual ID lookups entirely.**  
+> Instead of copying the numeric ID from the URL and editing `mapping_config.json` by hand, use the `npm run sync` command (step 6). It discovers all your templates automatically, fills in the correct IDs, and flags any unmapped fields as `TODO`.
 
 See [Customise field mappings](#customise-field-mappings) for all supported Faker methods.
 
@@ -96,7 +82,59 @@ The tool validates these at startup and throws a clear error if either is missin
 
 ---
 
-## 6. Run the tool
+## 6. Sync templates from DocuSeal (recommended)
+
+The sync command auto-discovers every template in your running DocuSeal instance, updates `mapping_config.json` with accurate IDs and field names, and tells you exactly which fields still need a Faker method.
+
+```bash
+npm run sync
+```
+
+**Example output:**
+```
+🔄  DocuSeal Template Sync starting...
+
+   Fetching templates from http://localhost:3000/api ...
+   Found 2 template(s) on the server.
+   Loaded local config with 2 template(s).
+   Merging ...
+   Saved  → mapping_config.json  (backup → mapping_config.backup.json)
+
+─────────────────────────────────────────────────────────
+  📋  DocuSeal Sync — Summary
+─────────────────────────────────────────────────────────
+
+  ✅  Updated  (2)
+       • Real Estate Sales Contract
+       • Lease Agreement
+
+  🆕  Added    (0)
+       (none)
+
+  📝  TODOs    (3 field(s) need a Faker method)
+       Open mapping_config.json and replace every "TODO: assign faker method"
+       with a real Faker.js expression.  Ref: https://fakerjs.dev/api/
+─────────────────────────────────────────────────────────
+```
+
+**What the sync does for each API template:**
+
+| Situation | Action |
+|---|---|
+| Template ID matches local config | Updates name, preserves all existing Faker methods, adds new fields as `TODO` |
+| Name matches but ID was wrong | Self-corrects `docuseal_template_id`, same merge |
+| Completely new template | Appends full block with all fields as `TODO` |
+| Local template not found in API | Kept with a ⚠️ stale warning (never auto-deleted) |
+
+After syncing, open `mapping_config.json` and replace every `"TODO: assign faker method"` value with a real Faker expression. See [Customise field mappings](#customise-field-mappings).
+
+> **Backup:** every `npm run sync` automatically writes a `mapping_config.backup.json` before overwriting the main file — a one-step recovery if anything looks unexpected.
+
+> **Re-run anytime:** sync is idempotent. Run it again whenever you add or rename templates in DocuSeal.
+
+---
+
+## 7. Run the tool
 
 ```bash
 npm run dev
@@ -156,11 +194,20 @@ Browse the full list at [fakerjs.dev/api](https://fakerjs.dev/api/).
 **`EnvValidationError: DOCUSEAL_API_URL Required`**
 `.env` is missing or the variable is empty. Re-check [step 5](#5-configure-environment-variables).
 
+**`SyncError: Authentication failed (HTTP 401)`**
+API key rejected during `npm run sync`. Re-copy it from DocuSeal **Settings → API** and update `DOCUSEAL_API_KEY` in `.env`.
+
+**`SyncError: DocuSeal API is unreachable`**
+DocuSeal isn't running or `DOCUSEAL_API_URL` is wrong. Start the Docker container and confirm the URL matches the port it's listening on.
+
+**`SyncError: DocuSeal API returned an unexpected response shape`**
+The running DocuSeal version uses a different API response structure. Check for a DocuSeal update or open an issue with the raw API response.
+
 **`DocusealApiError: HTTP 401`**
 The API key is wrong. Re-copy it from DocuSeal **Settings → API**.
 
 **`DocusealApiError: HTTP 404` on createSubmission**
-The `docuseal_template_id` in `mapping_config.json` doesn't exist in your DocuSeal instance. Check the template ID from the URL in DocuSeal.
+The `docuseal_template_id` in `mapping_config.json` doesn't match any template. Run `npm run sync` to auto-correct all IDs.
 
 **`SubmissionTimeoutError: not ready after 10 polling attempts`**
 DocuSeal's render worker didn't finish in 10 s. This usually means the template is very heavy or the DocuSeal container is under-resourced. Increase `MAX_POLL_RETRIES` in [src/services/docuseal.client.ts](src/services/docuseal.client.ts#L12) or give the Docker container more memory.
@@ -178,12 +225,15 @@ The field names in `mapping_config.json` must match the field names in the DocuS
 ```
 pdf_gen_data/
 ├── mapping_config.json              ← Edit this to configure templates & fields
+├── mapping_config.backup.json       ← Auto-created by npm run sync (safe rollback)
 ├── output_pdfs/                     ← Generated PDFs land here (gitignored)
 ├── src/
 │   ├── index.ts                     ← Orchestrator: runs the generation loop
-│   ├── types.ts                     ← Zod schemas + TypeScript types
+│   ├── types.ts                     ← Zod schemas + TypeScript types (incl. DocuSeal API)
+│   ├── scripts/
+│   │   └── sync.ts                  ← Auto-discovery: fetch templates, merge config
 │   ├── services/
-│   │   ├── config.service.ts        ← Reads & validates mapping_config.json
+│   │   ├── config.service.ts        ← Reads, validates & saves mapping_config.json
 │   │   ├── data-generator.service.ts← Calls fakerVI dynamically per field
 │   │   ├── docuseal.client.ts       ← DocuSeal API: submit, poll, download
 │   │   └── env.service.ts           ← Loads & validates .env variables
