@@ -13,6 +13,7 @@ This guide walks you through running `pdf-gen-data` end-to-end — from spinning
 | Node.js | ≥ 18 | Uses built-in `node:fs`, `node:stream/promises` |
 | npm | ≥ 9 | Bundled with Node 18 |
 | Docker | any | Easiest way to run DocuSeal locally |
+| poppler | any | Provides `pdftoppm` for PDF rasterization — see below |
 
 ---
 
@@ -151,7 +152,14 @@ For each template in `mapping_config.json`, the tool generates **5 records** and
   ...
 ```
 
-PDFs land in `./output_pdfs/` (gitignored by default).
+PDFs land in `./output_pdfs/` (gitignored by default). For each record the tool saves **two** files:
+
+| File | Contents |
+|---|---|
+| `template_name_1.pdf` | Clean vector PDF from DocuSeal |
+| `template_name_1_scanned.pdf` | Degraded raster PDF simulating a 150 DPI scanner |
+
+The scanned copy has grayscale colour, slight blur, reduced brightness, and random pixel noise — useful for testing OCR models or document-review UX against realistic low-quality input.
 
 ---
 

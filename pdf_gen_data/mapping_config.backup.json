@@ -20,7 +20,7 @@
     },
     {
       "docuseal_template_id": 2,
-      "name": "giay-mua-ban-dat-viet-tay",
+      "name": "Lease Agreement",
       "description": "Standard lease agreement template",
       "fields": {
         "Tenant Name": "person.fullName",
@@ -30,8 +30,7 @@
         "Monthly Rent": "finance.amount|{\"min\":500,\"max\":5000,\"dec\":0}",
         "Property Address": "location.streetAddress",
         "Tenant Phone": "phone.number",
-        "Tenant Email": "internet.email",
-        "FullName": "person.fullName"
+        "Tenant Email": "internet.email"
       }
     }
   ]

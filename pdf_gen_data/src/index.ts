@@ -18,6 +18,7 @@ import { ConfigService } from "./services/config.service";
 import { DataGeneratorService, GeneratedRecord } from "./services/data-generator.service";
 import { DocusealClient } from "./services/docuseal.client";
 import { EnvService } from "./services/env.service";
+import { ScannerSimulatorService } from "./services/scanner-simulator.service";
 import { ensureOutputDir, OUTPUT_PDFS_DIR } from "./utils/fs.utils";
 
 /** Records generated per template. */
@@ -33,6 +34,7 @@ async function main(): Promise<void> {
   // ── Wire up services ──────────────────────────────────────────────
   const generator = new DataGeneratorService();
   const client = new DocusealClient(env.apiUrl, env.apiKey);
+  const scanner = new ScannerSimulatorService();
 
   ensureOutputDir(OUTPUT_PDFS_DIR);
 
@@ -76,6 +78,16 @@ async function main(): Promise<void> {
         await client.downloadPdf(documents[0].url, outputPath);
 
         console.log(`  ✅ Saved → output_pdfs/${outputFilename}`);
+
+        // Step 6 — Degrade the clean PDF into a "scanned" copy
+        // Why a _scanned suffix: preserves the clean original for comparison.
+        // Both files land in output_pdfs/ so callers can pick either version.
+        const scannedFilename = outputFilename.replace(/\.pdf$/i, "_scanned.pdf");
+        const scannedPath = path.join(OUTPUT_PDFS_DIR, scannedFilename);
+
+        await scanner.simulate(outputPath, scannedPath);
+
+        console.log(`  🖨️  Scanned → output_pdfs/${scannedFilename}`);
         totalSuccess++;
       } catch (error) {
         // Graceful degradation — log and continue with the next record
